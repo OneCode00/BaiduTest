@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title>IFE JavaScript Task</title>
+    <style>
+        #listOutPut{
+            margin-top: 20px;
+            overflow: hidden;
+            zoom: 1;
+            border: 1px solid #000000;
+            height: 150px;
+            width: 100%;;
+        }
+        .box{
+            float: left;
+            width:20px;
+            height: 100%;
+            position: relative;
+            border: 1px solid #ffffff;
+        }
+        .red{
+            background-color: #ff0000;
+            position:absolute;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <input id="input" type="number" />
+    <div>
+        <input type="button" id="leftIn" value="左侧入" />
+        <input type="button" id="rightIn" value="右侧入" />
+        <input type="button" id="leftOut" value="左侧出" />
+        <input type="button" id="rightOut" value="右侧出" />
+        <input type="button" id="sort" value="排序" />
+    </div>
+    <div id="listOutPut">
+
+    </div>
+<script type="text/javascript">
+    (function(){
+        var list=[];
+        var input=document.getElementById("input");
+        document.getElementById("leftIn").addEventListener("click",function(){
+            if(regInput(input.value))
+                list.unshift(parseInt(input.value));
+            outPut();
+
+        });
+        document.getElementById("rightIn").addEventListener("click",function(){
+            if(regInput(input.value))
+                list.push(parseInt(input.value));
+            outPut();
+        });
+        document.getElementById("leftOut").addEventListener("click",function(){
+                var temp=list.shift();
+               alert(temp);
+            outPut();
+        });
+        document.getElementById("rightOut").addEventListener("click",function(){
+                var temp=list.pop();
+                alert(temp);
+            outPut();
+        });
+        document.getElementById("listOutPut").addEventListener("click",function(event){
+            var index=event.target.getAttribute("id");
+            if(index.toLowerCase()!="listoutput"){
+                list.splice(index,1);
+            }
+            outPut();
+        });
+        document.getElementById("sort").addEventListener("click",function(){
+           sort();
+        });
+
+            /**
+             * 检测是否可添加的函数
+             */
+            function regInput(value){
+                if(list.length>=60){
+                    alert("元素数量不能超过60");
+                    return false;
+                }
+                var reg=/^[0-9]+$/;
+                return reg.test(value)&&(value>=10)&&(value<=100);
+            }
+
+        /**
+         * 输出数组的函数
+         */
+            function outPut(){
+                var str="";
+                list.forEach(function(v,i){
+                    str+="<div class='box'><div class='red'id='"+i+"' style='height:"+v+"px;'></div></div>";
+                });
+                document.getElementById("listOutPut").innerHTML=str;
+            };
+
+        /**
+         * 排序的函数
+         */
+        function sort(){
+            var i, j,n=list.length,max,min,tmp;
+            for(i =0 ; i< n-1; i++) {
+                for(j = 0; j < n-i-1; j++) {
+                    if(list[j] > list[j+1])
+                    {
+                        animate(j);
+                        tmp = list[j] ; list[j] = list[j+1] ;  list[j+1] = tmp;
+                    }
+                }
+            }
+
+        }
+
+        function animate(index){
+            document.getElementById(index).style.backgroundColor="#00ff00";
+            window.setTimeout(function(){
+                outPut();
+                document.getElementById(index).style.backgroundColor="#ff0000";
+                document.getElementById(index+1).style.backgroundColor="#00ff00";
+            },1000);
+        }
+
+
+
+    })()
+</script>
+</body>
+</html>
