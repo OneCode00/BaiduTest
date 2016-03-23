@@ -44,17 +44,13 @@
             outPut();
         });
         document.getElementById("leftOut").addEventListener("click",function(){
-            if(regNumber(input.value)) {
-                var temp=list.shift();
-               alert(temp);
-            }
+            var temp=list.shift();
+            alert(temp);
             outPut();
         });
         document.getElementById("rightOut").addEventListener("click",function(){
-            if(regNumber(input.value)) {
-                var temp=list.pop();
-                alert(temp);
-            }
+            var temp=list.pop();
+            alert(temp);
             outPut();
         });
         document.getElementById("listOutPut").addEventListener("click",function(event){
