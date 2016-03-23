@@ -221,18 +221,20 @@
                 for(var v in aqiSourceData[city]){
                     date=new Date(v);
                     weekDay=date.getDay();
-                    if(weekDay<6){
-                        count+=1;
-                        total+=aqiSourceData[city][v];
-                    }else{
+                    if(weekDay==6){
                         count++;
                         total+=aqiSourceData[city][v];
                         chartData["week"+week]=Math.round(total/count);
                         count=0;
                         total=0;
                         week++;
+                    }else{
+                        count++;
+                        total+=aqiSourceData[city][v];
                     }
+
                 }
+                chartData["week"+week]=Math.round(total/count);
                 break;
             case "month":
                 chartData={};
@@ -241,18 +243,16 @@
                     date=new Date(v);
                     if(month==-1){
                         month=date.getMonth()+1;
-                        count++;
-                        total+=aqiSourceData[city][v];
-                    }else if(date.getMonth()+1==month) {
-                        count++;
-                        total+=aqiSourceData[city][v];
-                    }else{
+                    }else if(date.getMonth()+1!=month) {
                         chartData[month+"月"]=Math.round(total/count);
                         month = date.getMonth()+1;
                         count=0;
                         total=0;
                     }
+                    count++;
+                    total+=aqiSourceData[city][v];
                 }
+                chartData[month+"月"]=Math.round(total/count);
                 break;
         }
         console.log(JSON.stringify(chartData));
