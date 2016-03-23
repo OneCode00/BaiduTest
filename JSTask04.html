@@ -100,7 +100,7 @@
         add.attachEvent?add.attachEvent("onclick",addBtnHandle):addaddEventListener("click",addBtnHandle);
 
         // 想办法给aqi-table中的所有删除按钮绑定事件，触发delBtnHandle函数
-        var table=document.getElementById("aqi-table")
+        var table=document.getElementById("aqi-table");
         if(table.attachEvent){
             table.attachEvent("onclick", function () {
                 var event = window.event;
