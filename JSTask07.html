@@ -44,12 +44,17 @@
 <script type="text/javascript">
     (function(){
         var list=[];
+
+        for(var i=0;i<=15;i++){
+        	list[i]=Math.ceil(Math.random()*100);
+        }
+        outPut();
+
         var input=document.getElementById("input");
         document.getElementById("leftIn").addEventListener("click",function(){
             if(regInput(input.value))
                 list.unshift(parseInt(input.value));
             outPut();
-
         });
         document.getElementById("rightIn").addEventListener("click",function(){
             if(regInput(input.value))
@@ -76,7 +81,6 @@
         document.getElementById("sort").addEventListener("click",function(){
            sort();
         });
-
             /**
              * 检测是否可添加的函数
              */
@@ -88,7 +92,6 @@
                 var reg=/^[0-9]+$/;
                 return reg.test(value)&&(value>=10)&&(value<=100);
             }
-
         /**
          * 输出数组的函数
          */
@@ -104,31 +107,32 @@
          * 排序的函数
          */
         function sort(){
-            var i, j,n=list.length,max,min,tmp;
-            for(i =0 ; i< n-1; i++) {
-                for(j = 0; j < n-i-1; j++) {
-                    if(list[j] > list[j+1])
-                    {
-                        //animate(j);
+            var i=0, j=0,n=list.length,max,min,tmp,delay=false;
+            var fuck=function (){
+            		if(list[j] > list[j+1]){
                         tmp = list[j] ; list[j] = list[j+1] ;  list[j+1] = tmp;
-                        window.setIimeout(outPut,200);
+                        delay=true;
+                        outPut()
                     }
-                }
-            }
-
+                    j++;
+                    if(j ==n-i-1){
+                    	i++;	
+                    	j=0;
+                    	if(i==n-1)
+                    	return false;
+                    }
+                    
+                    if(delay){
+                    	delay=false;
+                    	window.setTimeout(fuck,100);
+                    }else{
+                    	fuck();
+                    }
+            };
+            fuck();
+          
         }
-
-        function animate(index){
-            document.getElementById(index).style.backgroundColor="#00ff00";
-            window.setTimeout(function(){
-                outPut();
-                document.getElementById(index).style.backgroundColor="#ff0000";
-                document.getElementById(index+1).style.backgroundColor="#00ff00";
-            },1000);
-        }
-
-
-
+      
     })()
 </script>
 </body>
