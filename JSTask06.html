@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title>IFE JavaScript Task</title>
+    <style>
+        #listOutPut{
+           margin-top: 20px;
+        }
+        .red{
+            background-color: #ff0000;
+            color: #ffffff;
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <input id="input" type="number" />
+    <div>
+        <input type="button" id="leftIn" value="左侧入" />
+        <input type="button" id="rightIn" value="右侧入" />
+        <input type="button" id="leftOut" value="左侧出" />
+        <input type="button" id="rightOut" value="右侧出" />
+    </div>
+    <div id="listOutPut">
+
+    </div>
+<script type="text/javascript">
+    (function(){
+        var list=[];
+        var input=document.getElementById("input");
+        document.getElementById("leftIn").addEventListener("click",function(){
+            if(regNumber(input.value))
+                list.unshift(input.value);
+            outPut();
+
+        });
+        document.getElementById("rightIn").addEventListener("click",function(){
+            if(regNumber(input.value))
+                list.push(input.value);
+            outPut();
+        });
+        document.getElementById("leftOut").addEventListener("click",function(){
+            if(regNumber(input.value)) {
+                var temp=list.shift();
+               alert(temp);
+            }
+            outPut();
+        });
+        document.getElementById("rightOut").addEventListener("click",function(){
+            if(regNumber(input.value)) {
+                var temp=list.pop();
+                alert(temp);
+            }
+            outPut();
+        });
+        document.getElementById("listOutPut").addEventListener("click",function(event){
+            var index=event.target.getAttribute("id");
+            if(index.toLowerCase()!="listoutput"){
+                list.splice(index,1);
+            }
+            outPut();
+        });
+
+            /**
+             * 检测是否为数字的函数
+             */
+            function regNumber(value){
+                var reg=/^[0-9]+$/;
+                return reg.test(value);
+            }
+
+        /**
+         * 输出数组的函数
+         */
+            function outPut(){
+                var str="";
+                list.forEach(function(v,i){
+                    str+="<span class='red'id='"+i+"'>"+v+"</span>";
+                })
+                document.getElementById("listOutPut").innerHTML=str;
+            }
+    })()
+</script>
+</body>
+</html>
