@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body{
+            margin:0;
+            padding: 0;
+        }
+        #container,p{
+            width: 800px;
+            margin: 30px auto;
+        }
+        div{
+            border: 2px solid #000000;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 15px;
+            margin: 10px;
+            background-color: #ffffff;
+        }
+        .active{
+            background-color: #0000ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div>
+            <div>
+                <div></div>
+                <div></div>
+            </div>
+            <div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+        <div>
+            <div>
+                <div></div>
+                <div></div>
+            </div>
+            <div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <button id="preOrder">前序</button>
+        <button id="inOrder">中序</button>
+        <button id="postOrder">后序</button>
+    </p>
+<script type="text/javascript">
+    (function(){
+        var animationList=[];
+        var timer=null;
+        var container=document.getElementById("container");
+        var preButton=document.getElementById("preOrder");
+        var inButton=document.getElementById("inOrder");
+        var postButton=document.getElementById("postOrder");
+
+        var Operation= {
+           regEvent:function(node, event, func){
+                        if (node.addEventListener) {
+                            node.addEventListener(event, func);
+                        } else if (node.attachEvent) {
+
+                            node.attachEvent("on" + event, func);
+                        } else {
+                            node["on" + event] = func;
+                        }
+                    },
+            addClass:function(node, className) {
+                        node.className = className;
+                    },
+            removeClass:function(node) {
+                        node.className = "";
+                    }
+         };
+
+
+        var TBT={
+            preOrder:function(node){
+                if(node!=null) {
+                    animationList.push(node);
+                    if (node.firstElementChild != null)
+                        arguments.callee(node.firstElementChild);
+                    if (node.lastElementChild != null)
+                        arguments.callee(node.lastElementChild);
+                }
+            },
+            inOrder:function(node){
+                if(node!=null) {
+                    if (node.firstElementChild != null)
+                        arguments.callee(node.firstElementChild);
+                    animationList.push(node);
+                    if (node.lastElementChild != null)
+                        arguments.callee(node.lastElementChild);
+                }
+            },
+            postOrder:function(node){
+                if(node!=null) {
+                    if (node.firstElementChild != null)
+                        arguments.callee(node.firstElementChild);
+                    if (node.lastElementChild != null)
+                        arguments.callee(node.lastElementChild);
+                    animationList.push(node);
+                }
+            },
+            animate:function(){
+                var i = 0;
+                Operation.addClass(animationList[i],"active");
+                timer = setInterval(function(){
+                    i++;
+                    if(i < animationList.length){
+                        Operation.removeClass(animationList[i-1]);
+                        Operation.addClass(animationList[i],"active");
+                    }else{
+                        clearInterval(timer);
+                        Operation.removeClass(animationList[i-1]);
+                    }
+                },500)
+            },
+            reset:function(){
+                var divs=document.getElementsByTagName("div");
+                [].forEach.call(divs,function(v){
+                   Operation.removeClass(v);
+                });
+            }
+        };
+
+        Operation.regEvent(preButton,"click",function(){
+            animationList=[];
+            clearInterval(timer);
+            TBT.reset();
+            TBT.preOrder(container);
+            TBT.animate();
+        });
+        Operation.regEvent(inButton,"click",function(){
+            animationList=[];
+            clearInterval(timer);
+            TBT.reset();
+            TBT.inOrder(container);
+            TBT.animate();
+        });
+        Operation.regEvent(postButton,"click",function(){
+            animationList=[];
+            clearInterval(timer);
+            TBT.reset();
+            TBT.postOrder(container);
+            TBT.animate();
+        });
+
+
+    })()
+</script>
+</body>
+</html>
