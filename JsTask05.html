@@ -221,7 +221,7 @@
                 for(var v in aqiSourceData[city]){
                     date=new Date(v);
                     weekDay=date.getDay();
-                    if(weekDay==0){
+                    if(weekDay==6){
                         count++;
                         total+=aqiSourceData[city][v];
                         chartData["week"+week]=Math.round(total/count);
