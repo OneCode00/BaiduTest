@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+        div{
+            display: flex;
+            align-items: center;
+            margin:auto;
+        }
+        .circle{
+            border-radius: 400px;
+            border:1px solid #ffffff;
+            width: 80%;
+            height: 80%;
+        }
+        #track4{
+            width: 600px;
+            height: 600px;
+            margin-top:100px;
+        }
+        #earth{
+            background-color: #0000ff;
+            border: none;
+        }
+        table{
+            background-color: #ffffff;
+            border: 1px solid #000000;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <td>对象</td>
+                    <td>操作</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>轨道1</td>
+                    <td><button>创建</button></td>
+                    <td><button>起飞</button></td>
+                </tr>
+                <tr>
+                    <td>轨道2</td>
+                    <td><button>创建</button></td>
+                    <td><button>起飞</button></td>
+                </tr>
+                <tr>
+                    <td>轨道3</td>
+                    <td><button>创建</button></td>
+                    <td><button>起飞</button></td>
+                </tr>
+                <tr>
+                    <td>轨道4</td>
+                    <td><button>创建</button></td>
+                    <td><button>起飞</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="circle" id="track4">
+            <div class="circle" id="track3">
+                <div class="circle" id="track2">
+                    <div class="circle" id="track1">
+                        <div class="circle" id="earth">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+<script type="text/javascript">
+    var shipList=[];
+    function spaceShipFactory(track) {
+        var spaceShip = {
+            id: 0,
+            energy: 100,
+            isStop: true,
+            destroy: false,
+            sendShip: function (track) {
+                this.id = track;
+                this.energySystem();
+                shipList.push(this);
+            },
+            powerSystem: function (command) {
+                if (command == "stop") {
+                    this.isStop = true;
+                } else if (command == "fly") {
+                    this.isStop = false;
+                }
+            },
+            energySystem: function () {
+                this.energy += 2;
+                if (this.energy >= 100)
+                    this.energy = 100;
+                if (!this.isStop)
+                    this.energy -= 5;
+                if (this.energy <= 0) {
+                    this.energy = 0;
+                    this.isStop = true;
+                }
+                setTimeout(this.energySystem, 1000);
+            },
+            messageSystem: function (obj) {
+                if (obj.id == this.id) {
+                    switch (obj.command) {
+                        case "stop":
+                        case "fly":
+                            this.powerSystem(obj.command);
+                            break;
+                        case "destroy":
+                            this.selfDestroy(obj.command);
+                            break;
+                        default :
+                            return;
+
+                    }
+                } else {
+                    return;
+                }
+            },
+            selfDestroy: function (command) {
+                if (!this.destroy && command == "destroy") {
+                    this.destroy = true;
+                    shipList = shipList.filter(function (v) {
+                        return v.id != this.id;
+                    });
+                };
+            }
+        };
+        var flag=shipList.some(function(v){
+            return v.id==track;
+        });
+        if(!flag){
+            spaceShip.sendShip(track);
+        }else{
+            console.log("添加失败");
+        }
+    };
+
+    var sp1=spaceShipFactory(1);
+
+
+    function messageFactory(id,content){
+        var message= {
+            id : id,
+            command : content
+    };
+        if(Math.random()<=0.3){
+            console.log("丢包");
+        }else{
+            shipList.forEach(function(v){
+                if(v.id==id){
+                    v.messageSystem(message);
+                }
+            })
+        }
+
+    };
+
+    var Mediator={};
+
+
+
+
+</script>
+</body>
+</html>
