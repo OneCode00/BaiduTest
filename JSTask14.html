@@ -9,7 +9,7 @@
             padding: 0;
             background-color: #000000;
         }
-        div{
+        .container,.circle{
             display: flex;
             align-items: center;
             margin:auto;
@@ -19,6 +19,22 @@
             border:1px solid #ffffff;
             width: 80%;
             height: 80%;
+            position: relative;
+        }
+        .ship{
+            position: absolute;
+            top:-20px;
+            left:50%;
+            margin-left: -50px;
+            width: 100px;
+            height: 40px;
+            line-height: 40px;
+            vertical-align: middle;
+            text-align: center;
+            border-radius: 15px;
+            border: 1px solid #ffffff;
+            background-color: #959593;
+            font-weight: bold;
         }
         #track4{
             width: 600px;
@@ -49,23 +65,23 @@
             <tbody>
                 <tr>
                     <td>轨道1</td>
-                    <td><button>创建</button></td>
-                    <td><button>起飞</button></td>
+                    <td><button class="button" data-target="1" >create</button></td>
+                    <td><button class="button" data-target="1" >fly</button></td>
                 </tr>
                 <tr>
                     <td>轨道2</td>
-                    <td><button>创建</button></td>
-                    <td><button>起飞</button></td>
+                    <td><button class="button" data-target="2" >create</button></td>
+                    <td><button class="button" data-target="2" >fly</button></td>
                 </tr>
                 <tr>
                     <td>轨道3</td>
-                    <td><button>创建</button></td>
-                    <td><button>起飞</button></td>
+                    <td><button class="button" data-target="3" >create</button></td>
+                    <td><button class="button" data-target="3" >fly</button></td>
                 </tr>
                 <tr>
                     <td>轨道4</td>
-                    <td><button>创建</button></td>
-                    <td><button>起飞</button></td>
+                    <td><button class="button" data-target="4" >create</button></td>
+                    <td><button class="button" data-target="5" >fly</button></td>
                 </tr>
             </tbody>
         </table>
@@ -95,6 +111,7 @@
                 this.id = track;
                 this.energySystem();
                 shipList.push(this);
+                $("#track"+track).append("<div class='ship' id='ship"+track+"'>"+this.energy+"%</div>")
             },
             powerSystem: function (command) {
                 if (command == "stop") {
@@ -113,6 +130,9 @@
                     this.energy = 0;
                     this.isStop = true;
                 }
+                console.log(this.energy)
+                $("ship"+this.id).html(this.energy+"%");
+                console.log(shipList[0])
                 setTimeout(this.energySystem, 1000);
             },
             messageSystem: function (obj) {
@@ -127,7 +147,6 @@
                             break;
                         default :
                             return;
-
                     }
                 } else {
                     return;
@@ -152,27 +171,57 @@
         }
     };
 
-    var sp1=spaceShipFactory(1);
 
 
-    function messageFactory(id,content){
+    function mediator(id,content){
         var message= {
             id : id,
             command : content
-    };
+        };
         if(Math.random()<=0.3){
             console.log("丢包");
         }else{
-            shipList.forEach(function(v){
-                if(v.id==id){
-                    v.messageSystem(message);
-                }
-            })
-        }
+            setTimeout(function(){
+                shipList.forEach(function(v){
+                    if(v.id==id){
+                        v.messageSystem(message);
+                    }
+                });
+            },1000);
 
+        }
     };
 
-    var Mediator={};
+    $(".button").bind("click",function(){
+       var id=$(this).data("target");
+       var content=$(this).html();
+        switch (content){
+            case "create":
+                spaceShipFactory(id);
+                $(this).html("destroy");
+                break;
+            case "destroy":
+                mediator(id,"destroy");
+                $(this).html("create");
+                break;
+            case "fly":
+                mediator(id,"fly");
+                $(this).html("stop");
+                break;
+            case "stop":
+                mediator(id,"stop");
+                $(this).html("fly");
+                break;
+
+        }
+
+    });
+
+
+
+
+
+
 
 
 
