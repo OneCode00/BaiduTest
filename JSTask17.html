@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title></title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;;
+        }
+        .container{
+            width: 960px;
+            margin: 0 auto;
+        }
+        .row{
+            overflow: hidden;
+            zoom:1;
+            margin: 20px 0;
+        }
+        label{
+            float: left;
+            margin-right: 20px;
+        }
+        input{
+            float: left;
+        }
+        button{
+            float: left;
+            width: 20px;
+            height: 20px;
+            margin-left: 20px;
+            width: 50px;;
+        }
+        .hint{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form>
+            <div class="row">
+                <label>名称</label>
+                <input type="text" id="t1"/>
+                <button id="c1">验证</button>
+                <p class="hint" id="h1">
+                    必填，长度为4~16位字符
+                </p>
+            </div>
+
+        </form>
+    </div>
+    <script type="text/javascript">
+        var regEvent=function(node, event, func){
+            if (node.addEventListener)
+                node.addEventListener(event, func);
+            else if (node.attachEvent)
+                node.attachEvent("on" + event, func);
+            else
+                node["on" + event] = func;
+        };
+        String.prototype.trim = function() {
+            return this.replace(/[(^\s+)(\s+$)]/g,"");
+        }
+
+       regEvent(document.getElementById("c1"),"click",function(e){
+           e.preventDefault();
+           var text=document.getElementById("t1");
+           var value=text.value.trim();
+           var hint=document.getElementById("h1");
+           var reg=/^.{4,16}$/;
+
+           if(!value) {
+               hint.style.display = "block";
+               hint.innerHTML="姓名不能为空";
+               hint.style.color="red";
+               text.style.borderColor="red";
+           }
+           else if(!reg.test(value.replace(/[\u0391-\uFFE5]/g,"nn"))){
+               hint.style.display = "block";
+               hint.innerHTML="必填，长度为4~16位字符";
+               hint.style.color="grey";
+               text.style.borderColor="grey";
+           }
+           else{
+               hint.style.display = "block";
+               hint.innerHTML="名称格式正确";
+               hint.style.color="green";
+               text.style.borderColor="green";
+           }
+
+       });
+
+    </script>
+</body>
+</html>

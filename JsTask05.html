@@ -127,6 +127,7 @@
             str+="</div>";
         };
         document.getElementsByClassName("aqi-chart-wrap")[0].innerHTML=str;
+        console.log(1)
     }
 
     /**
@@ -255,9 +256,8 @@
                 chartData[month+"月"]=Math.round(total/count);
                 break;
         }
-        console.log(JSON.stringify(chartData));
-        renderChart();
-
+      //  console.log(JSON.stringify(chartData));
+      //  renderChart();
     }
 
     /**
