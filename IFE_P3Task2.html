@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="render" charset="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title>排序表格</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+            font-family: "Arial";
+        }
+        #container{
+            width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+        }
+        #container>div{
+            width: 40%;
+            justify-content: space-around;
+        }
+        table{
+            border-collapse:collapse;
+            border-spacing:0;
+        }
+        table td{
+            border: 2px solid #6F6F6F;
+        }
+        thead{
+            background-color: #000000;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 22px;
+        }
+        thead td{
+
+            font-weight: bold;
+            overflow: hidden;
+            zoom:1;
+        }
+        thead td span{
+            display: table-cell;
+            float: left;
+            margin: 0 5px;
+        }
+        thead td span div{
+            font-size: 10px;
+        }
+        thead td span div:hover{
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div >
+            <button id="newData">生成随机数据</button>
+            <p>排序列：</p>
+            <div>
+                <label>语文</label><input type="checkbox" value="1" name="sortCol" checked="checked"/>
+                <label>数学</label><input type="checkbox" value="2" name="sortCol" checked="checked"/>
+                <label>英语</label><input type="checkbox" value="3" name="sortCol" checked="checked"/>
+                <label>总分</label><input type="checkbox" value="4" name="sortCol" checked="checked"/>
+            </div>
+            <button id="createTable">生成表格</button>
+            <p id="json"></p>
+        </div>
+        <div id="tableBox">
+
+        </div>
+    </div>
+<script type="text/javascript">
+    (function(){
+        var regEvent=function(node, event, func){
+            if (node.addEventListener)
+                node.addEventListener(event, func);
+            else if (node.attachEvent)
+                node.attachEvent("on" + event, func);
+            else
+                node["on" + event] = func;
+        };
+
+        var scores=[
+            {"姓名":"小明","语文":80,"数学":90,"英语":50,"总分":220},
+            {"姓名":"小红","语文":90,"数学":60,"英语":90,"总分":240},
+            {"姓名":"小亮","语文":60,"数学":100,"英语":70,"总分":230}
+        ];
+        var colList=[1,2,3,4];
+
+        document.getElementById("json").innerHTML=JSON.stringify(scores);
+        var tableBox=document.getElementById("tableBox");
+        var table=new dataTable(scores,colList);
+        tableBox.appendChild(table);
+
+        regEvent(document.getElementById("newData"),"click",function(){
+           var obj={};
+            obj["姓名"]="小王";
+            obj["语文"]=Math.round(Math.random()*100);
+            obj["数学"]=Math.round(Math.random()*100);
+            obj["英语"]=Math.round(Math.random()*100);
+            obj["总分"]=obj["语文"]+obj["数学"]+obj["英语"];
+            scores.push(obj);
+            document.getElementById("json").innerHTML=JSON.stringify(scores);
+        });
+
+        regEvent(document.getElementById("createTable"),"click",function(){
+            var cols=document.getElementsByName("sortCol");
+            [].forEach.call(cols,function(v){
+                if(v.checked)
+                    colList.push(v.value);
+            });
+            var newTable=new dataTable(scores,colList);
+            tableBox.innerHTML="";
+            tableBox.appendChild(newTable);
+        });
+
+
+
+
+
+
+        function dataTable(dataList,sortList){
+            var table=document.createElement("table");
+            var thead=document.createElement("thead");
+            var tr=document.createElement("tr");
+            var tbody=document.createElement("tbody");
+            var activeSort=null;
+            var titleList=[];
+            var str="";
+            dataList.forEach(function(v,i){
+                str+="<tr>";
+                for(var title in v){
+                    if(!i)
+                        titleList.push(title);
+
+                    str+="<td>"+v[title]+"</td>";
+                }
+                str+="</tr>";
+                i++;
+
+            });
+
+            tr.innerHTML=titleList.reduce(function(prev,curr,index){
+                var flag=sortList.sort().some(function(v,i,a){
+                    if(v==index){
+                        a.shift();
+                        return true;
+                    }
+                });
+                if(flag)
+                    return prev+"<td><span>"+curr+"</span> <span><div class='up'>∧</div><div class='down'>∨</div></span></td>";
+                else
+                    return prev+"<td>"+curr+"</td>";
+            },"");
+            tbody.innerHTML=str;
+            thead.appendChild(tr);
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            regEvent(thead,"click",function(e){
+                var target=window.event?window.event.srcElement: e.target;
+                var c=target.getAttribute("class");
+                var sortValue=target.parentNode.parentNode.firstChild.innerHTML;
+                if(c=="up"){
+                    dataList.sort(function(a,b){
+                        return a[sortValue]-b[sortValue];
+                    });
+                    update(target);
+                }else if(c=="down"){
+                    dataList.sort(function(a,b){
+                        return b[sortValue]-a[sortValue];
+                    });
+                    update(target);
+                }
+            });
+            var update=function(target){
+                var newStr="";
+                dataList.forEach(function(v,i){
+                    newStr+="<tr>";
+                    for(var title in v){
+                        newStr+="<td>"+v[title]+"</td>";
+                    }
+                    newStr+="</tr>";
+                });
+                tbody.innerHTML=newStr;
+                if(activeSort)
+                    activeSort.style.color="#ffffff";
+                target.style.color="#ff0000";
+                activeSort=target;
+            }
+
+            return table;
+
+        }
+
+    })()
+</script>
+</body>
+</html>
