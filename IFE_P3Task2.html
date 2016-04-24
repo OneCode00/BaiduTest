@@ -12,27 +12,30 @@
             font-family: "Arial";
         }
         #container{
-            width: 960px;
+            width: 1000px;
             margin: 0 auto;
             padding: 20px;
             display: flex;
         }
         #container>div{
-            width: 40%;
+            width: 48%;
             justify-content: space-around;
         }
         table{
             border-collapse:collapse;
             border-spacing:0;
+            position: relative;
         }
         table td{
             border: 2px solid #6F6F6F;
+            width: 80px;
         }
         thead{
             background-color: #000000;
             color: #ffffff;
             font-weight: bold;
             font-size: 22px;
+
         }
         thead td{
 
@@ -51,6 +54,14 @@
         thead td span div:hover{
             cursor: pointer;
         }
+        #tableBox{
+            height: 600px;
+            overflow: scroll;
+        }
+        #innerBox{
+            width: 100%;
+            height: 600px;
+        }
     </style>
 </head>
 <body>
@@ -68,7 +79,7 @@
             <p id="json"></p>
         </div>
         <div id="tableBox">
-
+            <div id="innerBox"></div>
         </div>
     </div>
 <script type="text/javascript">
@@ -82,28 +93,25 @@
                 node["on" + event] = func;
         };
 
+
         var scores=[
             {"姓名":"小明","语文":80,"数学":90,"英语":50,"总分":220},
             {"姓名":"小红","语文":90,"数学":60,"英语":90,"总分":240},
             {"姓名":"小亮","语文":60,"数学":100,"英语":70,"总分":230}
         ];
         var colList=[1,2,3,4];
+        for(var i=0;i<40;i++){
+            newData();
+        }
 
         document.getElementById("json").innerHTML=JSON.stringify(scores);
         var tableBox=document.getElementById("tableBox");
-        var table=new dataTable(scores,colList);
-        tableBox.appendChild(table);
+        var innerBox=document.getElementById("innerBox");
+        var table=new dataTable(tableBox,scores,colList);
+        tableBox.insertBefore(table,innerBox);
 
-        regEvent(document.getElementById("newData"),"click",function(){
-           var obj={};
-            obj["姓名"]="小王";
-            obj["语文"]=Math.round(Math.random()*100);
-            obj["数学"]=Math.round(Math.random()*100);
-            obj["英语"]=Math.round(Math.random()*100);
-            obj["总分"]=obj["语文"]+obj["数学"]+obj["英语"];
-            scores.push(obj);
-            document.getElementById("json").innerHTML=JSON.stringify(scores);
-        });
+
+        regEvent(document.getElementById("newData"),"click",newData);
 
         regEvent(document.getElementById("createTable"),"click",function(){
             var cols=document.getElementsByName("sortCol");
@@ -118,10 +126,19 @@
 
 
 
+        function newData(){
+            var obj={};
+            obj["姓名"]="小王";
+            obj["语文"]=Math.round(Math.random()*100);
+            obj["数学"]=Math.round(Math.random()*100);
+            obj["英语"]=Math.round(Math.random()*100);
+            obj["总分"]=obj["语文"]+obj["数学"]+obj["英语"];
+            scores.push(obj);
+            document.getElementById("json").innerHTML=JSON.stringify(scores);
+        }
 
 
-
-        function dataTable(dataList,sortList){
+        function dataTable(container,dataList,sortList){
             var table=document.createElement("table");
             var thead=document.createElement("thead");
             var tr=document.createElement("tr");
@@ -158,6 +175,9 @@
             thead.appendChild(tr);
             table.appendChild(thead);
             table.appendChild(tbody);
+
+
+            //注册点击表头排序的事件
             regEvent(thead,"click",function(e){
                 var target=window.event?window.event.srcElement: e.target;
                 var c=target.getAttribute("class");
@@ -174,6 +194,13 @@
                     update(target);
                 }
             });
+
+            //注册冻结表头的事件
+            regEvent(container,"scroll",function(){
+                table.firstChild.style.position=(this.scrollTop==0||this.scrollTop>=table.clientHeight)?"relative":"fixed";
+            });
+
+            //根据更新数据更新表格
             var update=function(target){
                 var newStr="";
                 dataList.forEach(function(v,i){
@@ -188,7 +215,7 @@
                     activeSort.style.color="#ffffff";
                 target.style.color="#ff0000";
                 activeSort=target;
-            }
+            };
 
             return table;
 
