@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="render" charset="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title></title>
+    <style>
+      *{
+        margin: 0;
+        padding: 0;
+      }
+      .container{
+        width: 960px;
+        margin: 0 auto;
+      }
+      .calendar{
+        border: 1px solid gray;
+        width: 210px;
+        overflow: hidden;
+        text-align: center;
+        display: none;
+      }
+      .calendar .title{
+        background-color: #ff0000;
+        color: #ffffff;
+        font-weight: bold;
+        overflow: hidden;
+        zoom:1;
+      }
+      .calendar .title:hover{
+        cursor: pointer;
+      }
+      .calendar .title #prev{
+        float: left;
+      }
+
+      .calendar .title #next{
+        float: right;
+      }
+      .calendar thead td{
+        width: 30px;
+        font-weight: bold;
+      }
+      .calendar tr td:first-child,.calendar tr td:last-child{
+        color: red;
+      }
+      .calendar tbody td{
+        color: grey;
+      }
+      .calendar tbody .active{
+        color: black;
+      }
+      .calendar tbody .active:hover{
+        background-color: red;
+        color: white;
+        cursor: pointer;
+      }
+      .calendar tbody #select{
+        background-color: red;
+        color: white;
+      }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+      <input id="getDate" type="text" />
+      <!--
+      <div class="calendar">
+          <div class="title">
+            <span id="prev"><</span>
+            2016年4月
+
+            <span id="next">></span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <td>日</td>
+                <td>一</td>
+                <td>二</td>
+                <td>三</td>
+                <td>四</td>
+                <td>五</td>
+                <td>六</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+
+            </tbody>
+          </table>
+      </div>
+    -->
+  </div>
+<script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+<script type="text/javascript">
+  function calendarFactory(input){
+    var calendar={
+      now:new Date(),
+      currentMonth:null,
+      currentYear:null,
+      currentDate:null,
+      startDay:null,
+      monthLengh:null,
+      endDay:null,
+      lastMonthLengh:null,
+      datesArr:[],
+      calendarBox:null,
+      tbody:null,
+      selectDate:this.now,
+      getDays:function(year,month){
+          this.datesArr=[];
+          this.startDay=new Date(year,month,1).getDay();
+          this.monthLengh=new Date(year,month+1,0).getDate();
+          this.endDay=new Date(year,month+1,0).getDay();
+          this.lastMonthLengh=new Date(year,month,0).getDate();
+          this.currentDate=this.currentDate<=this.monthLengh?this.currentDate:1;
+
+          for(var i=0;i<this.startDay;i++){
+            this.datesArr.unshift("<td>"+this.lastMonthLengh+"</td>");
+            this.lastMonthLengh--;
+          }
+          for(var i=1;i<=this.monthLengh;i++){
+            if(i==this.currentDate)
+              this.datesArr.push("<td class='active' id='select'>"+i+"</td>");
+            else
+              this.datesArr.push("<td class='active'>"+i+"</td>");
+          }
+          for(var i=1;i<=6-this.endDay;i++){
+            this.datesArr.push("<td>"+i+"</td>");
+          }
+          //console.log(this.datesArr)
+      },
+      drawCalendar:function(){
+        var box=$("<div class='calendar'></div>");
+        var title=$("<div class='title'><span id='prev'><</span><span id='monthYear'></span><span id='next'>></span></div>");
+        box.append(title);
+        var table=$("<table></table>");
+        var thead=$("<thead><tr><td>日</td><td>一</td><td>二</td><td>三</td><td>四</td><td>五</td><td>六</td></tr></thead>");
+        var tbody=$("<tbody></tbody>");
+        table.append(thead).append(tbody);
+
+        box.append(table);
+        box.insertAfter(input);
+        this.calendarBox=box;
+        this.refreshCalendar();
+      },
+      refreshCalendar:function(){
+        this.tbody=this.datesArr.reduce(function(prev,curr,index){
+          if(index%7==0)
+            return prev+"<tr>"+curr;
+          else if(index%7==6)
+            return prev+curr+"</tr>";
+          else {
+            return prev+curr;
+          }
+        },"");
+        var monthShow=this.currentMonth+1;
+        this.calendarBox.find("#monthYear").html(this.currentYear+'年'+monthShow+'月');
+        this.calendarBox.find("tbody").html(this.tbody);
+
+      },
+      initial:function(){
+        this.currentYear=this.now.getFullYear();
+        this.currentMonth=this.now.getMonth();
+        this.currentDate=this.now.getDate();
+        this.getDays(this.currentYear,this.currentMonth);
+        this.drawCalendar();
+        var that=this;
+        $(this.calendarBox).bind("click",function(e) {
+          var clickTarget=$(e.target);
+          if(clickTarget.attr("id")=="prev"){
+            if(that.currentMonth>0){
+              that.currentMonth--;
+            }else{
+              that.currentYear--;
+              that.currentMonth=11;
+            }
+            that.getDays(that.currentYear, that.currentMonth);
+            that.refreshCalendar();
+          }else if(clickTarget.attr("id")=="next"){
+            if(that.currentMonth<11){
+              that.currentMonth++;
+            }else{
+              that.currentYear++;
+              that.currentMonth=0;
+            }
+            that.getDays(that.currentYear, that.currentMonth);
+            that.refreshCalendar();
+          }else if(clickTarget.hasClass("active")){
+            that.currentDate=clickTarget.html();
+            that.selectDate=new Date(that.currentYear,that.currentMonth,that.currentDate);
+            input.val(that.selectDate);
+            that.calendarBox.hide();
+            $("#select").removeAttr("id");
+            clickTarget.attr("id","select");
+          }
+        });
+        input.bind("click",function(){
+
+          that.calendarBox.show();
+        });
+      }
+    };
+    calendar.initial();
+    return calendar;
+  };
+
+  var $input=$("#getDate");
+  calendarFactory($input);
+
+
+</script>
+</body>
+</html>
