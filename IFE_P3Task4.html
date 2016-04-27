@@ -293,7 +293,7 @@
             $(".calendar .yearBox")[0].style.display="flex";
             $(".calendar .yearBox")[0].scrollTop=that.yearPosTop;
           }else if(clickTarget.hasClass("monthChange")){
-            $(".calendar .monthBox").hide();
+            $(".calendar .yearBox").hide();
             $(".calendar .monthBox")[0].style.display="flex";
           }else if(clickTarget.parent().hasClass("monthBox")){
             that.currentMonth=clickTarget.html().slice(0,-1)-1;
