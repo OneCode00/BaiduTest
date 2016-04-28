@@ -17,6 +17,9 @@
       .container>div{
         padding: 20px 0;
       }
+      .container>div>span{
+        margin-right: 50px;
+      }
       .calendar{
         border: 1px solid gray;
         width: 210px;
@@ -24,10 +27,10 @@
         text-align: center;
         display: none;
         font-family: "arial";
-        position: relative;
+        position:absolute;
+        background-color: white;
       }
       .calendar .title{
-
         color: #ffffff;
         font-weight: bold;
         overflow: hidden;
@@ -119,6 +122,25 @@
         color: white;
         cursor:pointer;
       }
+      .calendar .bar{
+        overflow:hiddden;
+        zoom:1;
+      }
+      .calendar .bar div{
+        padding:5px 7px;
+        font-size: 0.9em;
+        color:grey;
+      }
+      .calendar .bar div:hover{
+        cursor:pointer;
+        color:red;
+      }
+      .calendar .bar .confirm{
+        float: left;
+      }
+      .calendar .bar .cancel{
+        float: right;
+      }
 
       @font-face {font-family: "iconfont";
       src: url('iconFont/iconfont.eot?t=1461823451'); /* IE9*/
@@ -136,20 +158,28 @@
       -webkit-text-stroke-width: 0.2px;
       -moz-osx-font-smoothing: grayscale;
     }
-  /*  .icon-calendar:before { content: "\e609"; }*/
 
     </style>
 </head>
 <body>
     <div class="container">
       <div>
-        <label>开始日期</label><input id="startDate" value="1900/1/1"/>
-        <label>结束日期</label><input id="endDate" value="2100/12/31"/>
+        <label>开始日期</label><input id="startDate" value="2010/3/20"/>
+        <label>结束日期</label><input id="endDate" value="2020/10/15"/>
       <button id="setCalendar">重新设定日历</button>
     </div>
     <div>
-      <label for="getDate" class="iconfont">&#xe609;</label>
-      <input id="getDate" type="text" />
+      <span>
+        <label for="getDate" class="iconfont">&#xe609;</label>
+        <input id="getDate" type="text" />
+      </span>
+      <!--
+      <span>
+        <label for="periodDate" class="iconfont">&#xe609;</label>
+        <input id="periodDate" type="text" />
+      </span>
+
+    -->
     </div>
     <div id="callbackResult">
 
@@ -169,6 +199,7 @@
       lastMonthLengh:null,
       bottomDate:null,
       ceilDate:null,
+      judgeAvailbleDate:"",
       datesArr:[],
       calendarBox:null,
       tbody:null,
@@ -176,24 +207,24 @@
       yearPosTop:null,
       monthsArr:[1,2,3,4,5,6,7,8,9,10,11,12],
       monthShow:null,
+      isPeriod:obj["isPeriod"],
+      pStartDate:null,
+      pEndDate:null,
+      minPeriod:obj["minPeriod"],
+      maxPeriod:obj["maxPeriod"],
       //更新日期数据
       getDays:function(year,month){
           this.datesArr=[];
 
-          if(this.calendarBox)
-            this.calendarBox.find(".monthBox div").removeClass("unav");
-          if(this.currentYear==this.bottomDate.getFullYear()){
-            this.currentMonth=this.currentMonth>=this.bottomDate.getMonth()?this.currentMonth:this.bottomDate.getMonth();
-            for(var i=1;i<=this.bottomDate.getMonth()+1;i++){
-              this.calendarBox.find(".monthBox div:nth-of-type("+i+")").addClass("unav");
-            }
-          }else if(this.currentYear==this.ceilDate.getFullYear()){
-            this.currentMonth=this.currentMonth<=this.ceilDate.getMonth()?this.currentMonth:this.ceilDate.getMonth();
-            for(var i=this.ceilDate.getMonth()+1;i<=12;i++){
-              this.calendarBox.find(".monthBox div:nth-of-type("+i+")").addClass("unav");
-            }
+          if(this.currentYear==this.bottomDate.getFullYear()&&this.currentMonth<=this.bottomDate.getMonth()){
+            this.currentMonth=this.bottomDate.getMonth();
+            this.judgeAvailbleDate="bottom";
+          }else if(this.currentYear==this.ceilDate.getFullYear()&&this.currentMonth>=this.ceilDate.getMonth()){
+            this.currentMonth=this.ceilDate.getMonth();
+            this.judgeAvailbleDate="ceil";
+          }else{
+            this.judgeAvailbleDate="";
           }
-
           this.startDay=new Date(year,month,1).getDay();
           this.monthLengh=new Date(year,month+1,0).getDate();
           this.endDay=new Date(year,month+1,0).getDay();
@@ -204,6 +235,13 @@
             this.lastMonthLengh--;
           }
           for(var i=1;i<=this.monthLengh;i++){
+            if(this.judgeAvailbleDate=="bottom"&&i<this.bottomDate.getDate()){
+              this.datesArr.push("<td>"+i+"</td>");
+              continue;
+            }else if(this.judgeAvailbleDate=="ceil"&&i>this.ceilDate.getDate()){
+              this.datesArr.push("<td>"+i+"</td>");
+              continue;
+            }
             if(i==this.currentDate)
               this.datesArr.push("<td class='active select'>"+i+"</td>");
             else
@@ -246,6 +284,8 @@
         var tbody=$("<tbody></tbody>");
         table.append(thead).append(tbody);
         box.append(table);
+        var bar=$("<div class='bar'><div class='confirm'>确认</div><div class='cancel'>取消</div></div>")
+        box.append(bar);
         //月份选择框
         var monthBox=$("<div class='monthBox'></div>");
         var that=this;
@@ -270,8 +310,13 @@
         this.yearBox.html(yearsStr);
         box.append(this.yearBox);
         box.insertAfter(obj["input"]);
-        this.yearSelected=$(".yearBox .select");
+        var posType=obj["input"].parent().css("position");
+        if(posType!="absolute"||posType!="fixed"){
+          obj["input"].parent().css({"position":"relative","overflow":"visible","zIndex":10});
+          box.css({"left":obj["input"].position().left})
+        }
 
+        this.yearSelected=$(".yearBox .select");
         this.calendarBox=box;
         this.refreshCalendar();
       },
@@ -294,7 +339,20 @@
         this.calendarBox.find(".monthBox div:nth-of-type("+this.monthShow+")").addClass("select");
 
         this.yearPosTop=20*((this.currentYear-this.bottomDate.getFullYear())/3)-100;
+
+        this.calendarBox.find(".monthBox div").removeClass("unav");
+        if(this.currentYear==this.bottomDate.getFullYear()){
+          for(var i=1;i<this.bottomDate.getMonth()+1;i++){
+            this.calendarBox.find(".monthBox div:nth-of-type("+i+")").addClass("unav");
+          }
+        }
+        if(this.currentYear==this.ceilDate.getFullYear()){
+          for(var i=this.ceilDate.getMonth()+2;i<=12;i++){
+            this.calendarBox.find(".monthBox div:nth-of-type("+i+")").addClass("unav");
+          }
+        }
       },
+      //更新年份选择框
       refreshYearBox:function(target){
         this.yearSelected=target;
         $(".yearBox .select").removeClass("select");
@@ -339,12 +397,16 @@
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
           }else if(clickTarget.hasClass("active")){
-            that.currentDate=clickTarget.html();
-            that.selectDate=new Date(that.currentYear,that.currentMonth,that.currentDate);
-            obj["input"].val(that.selectDate.toLocaleDateString());
-            that.calendarBox.hide(obj["callback"]());
-            that.calendarBox.find("table .select").removeClass("select");
-            clickTarget.addClass("select");
+            if(!that.isPeriod){
+              that.currentDate=clickTarget.html();
+              that.selectDate=new Date(that.currentYear,that.currentMonth,that.currentDate);
+              obj["input"].val(that.selectDate.toLocaleDateString());
+              that.calendarBox.hide(obj["callback"]());
+              that.calendarBox.find("table .select").removeClass("select");
+              clickTarget.addClass("select");
+            }else{
+
+            }
           }else if(clickTarget.hasClass("yearChange")){
             that.calendarBox.find(".monthBox").hide();
             that.calendarBox.find(".yearBox")[0].style.display="flex";
@@ -364,8 +426,13 @@
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
           }else if(clickTarget.hasClass("monthYear")){
-            that.calendarBox.find(".calendar .monthBox").hide();
-            $(".calendar .yearBox").hide();
+            that.calendarBox.find(".monthBox").hide();
+            that.calendarBox.find(".yearBox").hide();
+          }else if(clickTarget.hasClass("confirm")){
+            obj["input"].val(that.selectDate.toLocaleDateString());
+            that.calendarBox.hide(obj["callback"]());
+          }else if(clickTarget.hasClass("cancel")){
+            that.calendarBox.hide();
           }
         });
 
@@ -385,7 +452,15 @@
     endDate:$("#endDate").val(),
     callback:callback
   });
-
+/*
+  calendarFactory({
+    input:$("#periodDate"),
+    startDate:$("#startDate").val(),
+    endDate:$("#endDate").val(),
+    callback:callback,
+    isPeriod:true
+  });
+*/
   $("#setCalendar").bind("click",function(){
 
       calendarFactory({
