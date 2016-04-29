@@ -13,12 +13,16 @@
       .container{
         width: 960px;
         margin: 0 auto;
+        font-family: "微软雅黑";
       }
       .container>div{
-        padding: 20px 0;
+        margin-bottom: 50px;
       }
-      .container>div>span{
-        margin-right: 50px;
+      .container>div>div{
+        padding: 15px 0;
+      }
+      #periodDate{
+        width: 200px;
       }
       .calendar{
         border: 1px solid gray;
@@ -28,6 +32,7 @@
         display: none;
         font-family: "arial";
         position:absolute;
+        z-index: 10;
         background-color: white;
       }
       .calendar .title{
@@ -78,11 +83,19 @@
       .calendar tbody .active{
         color: black;
       }
+      .calendar tbody .period{
+        background-color: pink;
+      }
       .calendar tbody .active:hover{
         background-color: red;
-        color: white;
+        color: white!important;
         cursor: pointer;
       }
+
+      .calendar tbody td:not(.active):hover{
+        cursor:not-allowed;
+      }
+
       .calendar .select{
         background-color: red;
         color: white!important;
@@ -112,6 +125,10 @@
       .calendar .monthBox .unav{
         color:grey;
       }
+      .calendar .monthBox .unav:hover{
+        cursor: not-allowed;
+      }
+
       .calendar .yearBox div{
         width: 60px;
         height: 20x;
@@ -164,25 +181,35 @@
 <body>
     <div class="container">
       <div>
-        <label>开始日期</label><input id="startDate" value="2010/3/20"/>
-        <label>结束日期</label><input id="endDate" value="2020/10/15"/>
-      <button id="setCalendar">重新设定日历</button>
+        <div>
+          <label>开始日期</label><input id="startDate" value="2010/3/20"/>
+          <label>结束日期</label><input id="endDate" value="2020/10/15"/>
+          <br/>
+          <button id="setCalendar">重新生成单个日历</button>
+        </div>
+        <div>单个日期的日历：</div>
+        <div>
+          <label for="getDate" class="iconfont">&#xe609;</label>
+          <input id="getDate" type="text" />
+
+        </div>
+
     </div>
     <div>
-      <span>
-        <label for="getDate" class="iconfont">&#xe609;</label>
-        <input id="getDate" type="text" />
-      </span>
-      <!--
-      <span>
+      <div>
+        <label>开始日期</label><input id="startDate2" value="2010/3/20"/>
+        <label>结束日期</label><input id="endDate2" value="2020/10/15"/>
+        <label>最短期限</label><input id="minPeriod" value="3"/>
+        <label>最长期限</label><input id="maxPeriod" value="100"/>
+        <button id="setCalendar2">重新生成时间段日历</button>
+      </div>
+      <div>时间段的日历：</div>
+      <div>
         <label for="periodDate" class="iconfont">&#xe609;</label>
         <input id="periodDate" type="text" />
-      </span>
-
-    -->
-    </div>
-    <div id="callbackResult">
-
+      </div>
+      <div id="callbackResult">
+      </div>
     </div>
   </div>
 <script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
@@ -210,6 +237,7 @@
       isPeriod:obj["isPeriod"],
       pStartDate:null,
       pEndDate:null,
+      tempDate:null,
       minPeriod:obj["minPeriod"],
       maxPeriod:obj["maxPeriod"],
       //更新日期数据
@@ -230,6 +258,7 @@
           this.endDay=new Date(year,month+1,0).getDay();
           this.lastMonthLengh=new Date(year,month,0).getDate();
           this.currentDate=this.currentDate<=this.monthLengh?this.currentDate:1;
+
           for(var i=0;i<this.startDay;i++){
             this.datesArr.unshift("<td>"+this.lastMonthLengh+"</td>");
             this.lastMonthLengh--;
@@ -242,10 +271,25 @@
               this.datesArr.push("<td>"+i+"</td>");
               continue;
             }
-            if(i==this.currentDate)
-              this.datesArr.push("<td class='active select'>"+i+"</td>");
-            else
-              this.datesArr.push("<td class='active'>"+i+"</td>");
+            if(this.isPeriod){
+                this.tempDate=new Date(this.currentYear,this.currentMonth,i);
+
+                if(this.pStartDate&&this.tempDate.toDateString()==this.pStartDate.toDateString())
+                  this.datesArr.push("<td class='active select'>"+i+"</td>");
+                else if(this.pEndDate&&this.tempDate.toDateString()==this.pEndDate.toDateString())
+                  this.datesArr.push("<td class='active select'>"+i+"</td>");
+                else if(this.pStartDate&&this.pEndDate&&this.tempDate>this.pStartDate&&this.tempDate<this.pEndDate)
+                  this.datesArr.push("<td class='active period'>"+i+"</td>");
+                else
+                  this.datesArr.push("<td class='active'>"+i+"</td>");
+
+            }else{
+              if(i==this.currentDate)
+                this.datesArr.push("<td class='active select'>"+i+"</td>");
+              else
+                this.datesArr.push("<td class='active'>"+i+"</td>");
+            }
+
           }
           for(var i=1;i<=6-this.endDay;i++){
             this.datesArr.push("<td>"+i+"</td>");
@@ -312,7 +356,7 @@
         box.insertAfter(obj["input"]);
         var posType=obj["input"].parent().css("position");
         if(posType!="absolute"||posType!="fixed"){
-          obj["input"].parent().css({"position":"relative","overflow":"visible","zIndex":10});
+          obj["input"].parent().css({"position":"relative","overflow":"visible"});
           box.css({"left":obj["input"].position().left})
         }
 
@@ -368,6 +412,7 @@
         //日历内点击事件
         this.calendarBox.bind("click",function(e) {
           var clickTarget=$(e.target);
+          //上一月
           if(clickTarget.hasClass("prev")){
             if(that.currentYear==that.bottomDate.getFullYear()&&that.currentMonth<=that.bottomDate.getMonth()){
               return;
@@ -382,6 +427,7 @@
             }
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
+            //下一月
           }else if(clickTarget.hasClass("next")){
             if(that.currentYear==that.ceilDate.getFullYear()&&that.currentMonth>=that.ceilDate.getMonth()){
               return;
@@ -396,7 +442,9 @@
             }
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
+            //选日期
           }else if(clickTarget.hasClass("active")){
+            //单个日期
             if(!that.isPeriod){
               that.currentDate=clickTarget.html();
               that.selectDate=new Date(that.currentYear,that.currentMonth,that.currentDate);
@@ -404,46 +452,96 @@
               that.calendarBox.hide(obj["callback"]());
               that.calendarBox.find("table .select").removeClass("select");
               clickTarget.addClass("select");
+            //一段日期
             }else{
+              if(clickTarget.hasClass("select")){
+                var tempDate=new Date(that.currentYear,that.currentMonth,clickTarget.html());
+                if(that.pStartDate&&tempDate.toDateString()==that.pStartDate.toDateString()){
+                  that.pStartDate=null;
+                }else if(that.pEndDate&&tempDate.toDateString()==that.pEndDate.toDateString()){
+                  that.pEndDate=null;
+                }
+                that.getDays(that.currentYear, that.currentMonth);
+                that.refreshCalendar();
+              }else if(!that.pStartDate&&!that.pEndDate){
+                that.pStartDate=new Date(that.currentYear,that.currentMonth,clickTarget.html());
+                clickTarget.addClass("select");
+              }else if(!that.pStartDate||!that.pEndDate){
+                var tempDate1=new Date(that.currentYear,that.currentMonth,clickTarget.html());
+                var tempDate2=that.pStartDate||that.pEndDate||that.selectDate;
+                if(tempDate1<tempDate2){
+                  that.pStartDate=tempDate1;
+                  that.pEndDate=tempDate2;
+                }else{
+                  that.pStartDate=tempDate2;
+                  that.pEndDate=tempDate1;
+                }
+                that.getDays(that.currentYear, that.currentMonth);
+                that.refreshCalendar();
+              }
 
             }
+          //进入年份选择
           }else if(clickTarget.hasClass("yearChange")){
             that.calendarBox.find(".monthBox").hide();
             that.calendarBox.find(".yearBox")[0].style.display="flex";
             that.calendarBox.find(".yearBox")[0].scrollTop=that.yearPosTop;
+          //进入月份选择
           }else if(clickTarget.hasClass("monthChange")){
             that.calendarBox.find(".yearBox").hide();
             that.calendarBox.find(".monthBox")[0].style.display="flex";
+          //选择月份
           }else if(clickTarget.parent().hasClass("monthBox")){
             that.currentMonth=clickTarget.html().slice(0,-1)-1;
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
             clickTarget.parent().hide();
+          //选择年份
           }else if(clickTarget.parent().hasClass("yearBox")){
             that.currentYear=clickTarget.html();
             clickTarget.parent().hide();
             that.refreshYearBox(clickTarget);
             that.getDays(that.currentYear, that.currentMonth);
             that.refreshCalendar();
+          //隐藏年份月份选择框
           }else if(clickTarget.hasClass("monthYear")){
             that.calendarBox.find(".monthBox").hide();
             that.calendarBox.find(".yearBox").hide();
+          //确认选择
           }else if(clickTarget.hasClass("confirm")){
-            obj["input"].val(that.selectDate.toLocaleDateString());
-            that.calendarBox.hide(obj["callback"]());
+            if(!that.isPeriod){
+              obj["input"].val(that.selectDate.toLocaleDateString());
+              that.calendarBox.hide(obj["callback"]());
+            }else{
+              var period=parseInt((that.pEndDate-that.pStartDate) / 1000 / 60 / 60 /24)+1;
+              if(!that.pStartDate||!that.pEndDate){
+                alert("请选择一段日期");
+              }else if(obj["minPeriod"]&&period<obj["minPeriod"]){
+                alert("小于最短期限");
+              }else if(obj["maxPeriod"]&&period>obj["maxPeriod"]){
+                alert("大于最长期限");
+              }else{
+                obj["input"].val(that.pStartDate.toLocaleDateString()+"到"+that.pEndDate.toLocaleDateString());
+                that.calendarBox.hide(obj["callback"]());
+                that.calendarBox.find("table .select").removeClass("select");
+              }
+            }
+          //取消
           }else if(clickTarget.hasClass("cancel")){
-            that.calendarBox.hide();
+              that.calendarBox.hide();
           }
         });
 
+        //绑定输入框点击事件
         obj["input"].bind("click",function(){
           that.calendarBox.toggle();
+          that.getDays(that.currentYear, that.currentMonth);
+          that.refreshCalendar();
         });
 
       }
     };
     calendar.initial();
-    //return calendar;
   };
 
   calendarFactory({
@@ -452,24 +550,36 @@
     endDate:$("#endDate").val(),
     callback:callback
   });
-/*
+
   calendarFactory({
     input:$("#periodDate"),
-    startDate:$("#startDate").val(),
-    endDate:$("#endDate").val(),
+    startDate:$("#startDate2").val(),
+    endDate:$("#endDate2").val(),
     callback:callback,
-    isPeriod:true
+    isPeriod:true,
+    minPeriod:$("#minPeriod").val(),
+    maxPeriod:$("#maxPeriod").val()
   });
-*/
-  $("#setCalendar").bind("click",function(){
 
+  $("#setCalendar").bind("click",function(){
       calendarFactory({
         input:$("#getDate"),
         startDate:$("#startDate").val(),
         endDate:$("#endDate").val(),
         callback:callback
       });
+  });
 
+  $("#setCalendar2").bind("click",function(){
+      calendarFactory({
+        input:$("#periodDate"),
+        startDate:$("#startDate2").val(),
+        endDate:$("#endDate2").val(),
+        callback:callback,
+        isPeriod:true,
+        minPeriod:$("#minPeriod").val(),
+        maxPeriod:$("#maxPeriod").val()
+      });
   });
 
   function callback(){
