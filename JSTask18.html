@@ -182,7 +182,7 @@
                 [1,2,3,4,5].forEach(function(v){
                     regValue(v);
                 });
-                var flag=hintText.forEach(function(v){
+                var flag=hintText.every(function(v){
                    return v.isPassed;
                 });
                 if(flag)
